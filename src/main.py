@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
-from database import init_db
+from database import repo_dependency
+from services.note_service import NoteService
 
 app = FastAPI()
 
@@ -10,6 +11,8 @@ async def healthy():
     return {"healthy": True}
 
 
-@app.on_event("startup")
-async def on_startup():
-    await init_db()
+@app.post("/create-note")
+async def create_note(title: str, content: str, priority: int, repo: repo_dependency):
+    service = NoteService(repo)
+    note = await service.create_note(title, content, priority)
+    return note.dict()
